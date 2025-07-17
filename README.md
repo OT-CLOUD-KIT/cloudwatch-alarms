@@ -9,8 +9,7 @@ A Terraform module to provision configurable **AWS CloudWatch Alarms** using sta
 
 ---
 
-## Architecture
-
+## Feature
 > This module supports creating CloudWatch alarms using:
 > - Basic metrics (e.g., `Average`, `Sum`)
 > - Extended statistics (e.g., `p95`, `p99`)
@@ -20,8 +19,8 @@ A Terraform module to provision configurable **AWS CloudWatch Alarms** using sta
 ---
 
 ## Architecture
+<img width="715" height="498" alt="image" src="https://github.com/user-attachments/assets/30d5f199-274a-4a7d-be75-782cfce24a13" />
 
-![alt text](image.png)
 
 ## Providers
 
@@ -32,37 +31,113 @@ A Terraform module to provision configurable **AWS CloudWatch Alarms** using sta
 
 ---
 
+
 ## Usage
 
 
 ```hcl
-module "statistic_alarm" {
-  source              = "git@github.com:OT-CLOUD-KIT/terraform-aws-cloudwatch-alarm.git?ref=main"
-
-  alarm_name          = "high-cpu-alerts"
+module "cloudwatch" {
+  source              = "git@github.com:OT-CLOUD-KIT/cloudwatch-alarms.git?ref=Feature"
+  alarm_name          = "i-0cf11703b486c578e-instance-cpu-high-alerts"
   comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 2
+  evaluation_periods  = 5
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = 60
+  extended_statistic  = "p90"
+  threshold           = 75
+  alarm_description   = "Alarm for CPU utilization more than 75%"
+  alarm_actions       = ["arn:aws:sns:us-east-1:509633460021:demo"]
+  tags = {
+    Purpose = "CPU_Utilization"
+  }
+
+  dimensions = {
+    InstanceId = "i-0cf11703b486c578e"
+  }
+}
+
+module "statistic" {
+  source              = "git@github.com:OT-CLOUD-KIT/cloudwatch-alarms.git?ref=Feature"
+  alarm_name          = "i-0cf11703b486c578e-cpu-utilization-alarm-alerts"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 5
   metric_name         = "CPUUtilization"
   namespace           = "AWS/EC2"
   period              = 60
   statistic           = "Average"
   threshold           = 75
-  dimensions          = { InstanceId = "i-0abcd1234ef567890" }
+  alarm_description   = "Alarm for CPU utilization more than 75%"
+  alarm_actions       = ["arn:aws:sns:us-east-1:509633460021:demo"]
+  tags = {
+    Purpose = "CPU_Utilization"
+  }
 
-  alarm_description   = "Alert if CPU usage exceeds 75%"
-  alarm_actions       = ["arn:aws:sns:us-east-1:123456789012:alerts"]
+  dimensions = {
+    InstanceId = "i-0cf11703b486c578e"
+  }
+}
 
-  # Standard Tags
-  bu      = "OT"
-  program = "CloudKit"
-  app     = "WebApp"
-  env     = "prod"
-  team    = "DevOps"
-  region  = "us-east-1"
+module "custom_metrics" {
+  source              = "git@github.com:OT-CLOUD-KIT/cloudwatch-alarms.git?ref=Feature"
+  alarm_name          = "5xx-error-rate-alerts"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 5
+  threshold           = 5
+  alarm_description   = "5xx-response error is too high"
+  alarm_actions       = ["arn:aws:sns:us-east-1:509633460021:demo"]
+  tags = {
+    Purpose = "5xx-error"
+  }
+
+  metric_query = [
+    {
+      expression  = "m2/m1*100"
+      id          = "e1"
+      label       = "Error Rate"
+      return_data = true
+      metric      = []
+    },
+    {
+      id = "m1"
+      metric = [
+        {
+          dimensions = {
+            LoadBalancer = "app/d-ot-bp-alb/cca02c1c3572ccca"
+          }
+          metric_name = "RequestCount"
+          namespace   = "AWS/ApplicationELB"
+          period      = 120
+          stat        = "Sum"
+          unit        = "Count"
+        }
+      ]
+    },
+    {
+      id = "m2"
+      metric = [
+        {
+          dimensions = {
+            LoadBalancer = "app/d-ot-bp-alb/cca02c1c3572ccca"
+          }
+          metric_name = "HTTPCode_ELB_5XX_Count"
+          namespace   = "AWS/ApplicationELB"
+          period      = 120
+          stat        = "Sum"
+          unit        = "Count"
+        }
+      ]
+    }
+  ]
 }
 
 
 ```
+
+
+> **Note:**  
+> The above example demonstrates how to use the module. All variables, resources, and outputs used here are already defined within this module.
+
 
 ## Resources
 
