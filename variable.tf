@@ -1,6 +1,6 @@
 variable "alarm_actions" {
   type        = list(string)
-  default     = []
+  default     = ["arn:aws:sns:us-east-1:509633460021:demo"]
   description = "List of the actions that will perform when alarm trigged"
 }
 
@@ -12,7 +12,7 @@ variable "treat_missing_data" {
 
 variable "alarm_name" {
   type        = string
-  default     = "alarm"
+  default     = "instance-cpu-high"
   description = "Name of Cloudwatch alarm"
 }
 
@@ -24,36 +24,36 @@ variable "comparison_operator" {
 
 variable "evaluation_periods" {
   type        = number
-  default     = 1
+  default     = 5
   description = "Evaluation period"
 }
 
 variable "metric_name" {
   type        = string
-  default     = null
+  default     = CPUUtilization
   description = "Name of metrics"
 }
 
 variable "namespace" {
   type        = string
-  default     = null
+  default     = "AWS/EC2"
   description = "Namespace for the metrics"
 }
 
 variable "period" {
   type    = number
-  default = null
+  default = 60
 }
 
 variable "statistic" {
   type        = string
-  default     = null
+  default     = "Average"
   description = "Statistic such as Sum, Average etc"
 }
 
 variable "extended_statistic" {
   type        = string
-  default     = null
+  default     = "p90"
   description = "Extended statistic such as p90,p95,p99 etc"
 }
 
@@ -71,14 +71,19 @@ variable "alarm_description" {
 
 variable "dimensions" {
   type        = map(string)
-  default     = null
-  description = "About AWS resource on which cloudwatch alarm has to set"
+  default     = {
+    InstanceId = "i-0cf11703b486c578e"
+  }
+  description = "Dimensions for the metric (e.g., InstanceId, LoadBalancer)"
 }
+
 
 variable "tags" {
   type        = map(string)
-  default     = null
-  description = "Tags for Cloudwatch alarm"
+  default     = {
+    Purpose = "CPU_Utilization"
+  }
+  description = "Tags to associate with the CloudWatch alarm"
 }
 
 variable "insufficient_data_actions" {
@@ -190,3 +195,5 @@ variable "region" {
   type        = string
   default = "us-east-1"
 }
+
+
