@@ -86,12 +86,7 @@ httpcode_lb_5xx_count_alerts_details = {
 }
 
 
-# Naming & Tagging
-# -----------------------------------------
-bu       = "bp"
-program  = "ot"
-team     = "devops"
-app      = "ot"
-env      = "d"
-region   = "us-east-1"
-resource = "cloud-watch"
+
+env = "dev"
+app = "ot-cloud-kit"
+owner = "opstree"
